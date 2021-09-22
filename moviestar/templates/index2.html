@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>무비스타 연습</title>
+    <!--jQuery-->
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.js"
+      integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+      integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+      crossorigin="anonymous"
+    ></script>
+    <!--bootstarp css-->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+      integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l"
+      crossorigin="anonymous"
+    />
+    <!--google font-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap"
+      rel="stylesheet"
+    />
+    <!--font awesome-->
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
+      integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9SiP4dIRy0EXTlnuz47vAwmeGwVChigm"
+      crossorigin="anonymous"
+    />
+    <style>
+      * {
+        font-family: "Do Hyeon", sans-serif;
+        margin: 0;
+      }
+      header {
+        background-color: #ffdd57;
+        text-align: center;
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+      header p:first-child {
+        font-size: 40px;
+      }
+      header p:last-child {
+        font-size: 26px;
+      }
+      #card-box {
+        width: 500px;
+        margin: 0px auto;
+        display: flex;
+        flex-direction: column;
+      }
+      .card-dynamic {
+        display: flex;
+        justify-content: space-around;
+      }
+      .card-title {
+        font-size: 29px;
+      }
+      .card-text {
+        font-size: 19px;
+      }
+      .media {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .media-left {
+        margin-left: 10px;
+      }
+      .skyblue {
+        color: rgb(74, 188, 241);
+      }
+      .red {
+        color: rgb(179, 37, 37);
+      }
+      .a-reset {
+        color: black;
+      }
+      .a-reset:hover {
+        cursor: pointer;
+        color: black;
+      }
+    </style>
+    <script>
+      $(document).ready(function () {
+        $("#card-box").empty();
+        showStar();
+      });
+      function starLike(name) {
+        $.ajax({
+          type: "POST",
+          url: "/api/like",
+          data: { star_name: name },
+          success: function (response) {
+            if (response["result"] == "success") {
+              alert("좋아요!");
+              window.location.reload();
+            }
+          },
+        });
+      }
+      function starBye(name) {
+        $.ajax({
+          type: "POST",
+          url: "/api/del",
+          data: { star_name: name },
+          success: function (response) {
+            if (response["result"] == "success") {
+              alert("잘가요~");
+              window.location.reload();
+            }
+          },
+        });
+      }
+      function showStar() {
+        $.ajax({
+          url: "/api/list",
+          type: "GET",
+          data: {},
+          success: function (response) {
+            stars = response["star_list"];
+            for (let i = 0; i < stars.length; i++) {
+              let name = stars[i]["name"];
+              let img_url = stars[i]["img_url"];
+              let recent = stars[i]["recent"];
+              let url = stars[i]["url"];
+              let like = stars[i]["like"];
+              makecard(name, img_url, recent, url, like);
+            }
+          },
+        });
+      }
+      function makecard(name, img_url, recent, url, like) {
+        let html_temp = `
+          <div class="card text-center shadow-sm mb-3 bg-white rounded">
+        <div class="media">
+          <div class="media-left">
+            <img
+              src="${img_url}"
+              alt="Placeholder image"
+              width="90px"
+              height="90px"
+            />
+          </div>
+          <div class="media-body">
+            <div class="card-body">
+              <a class="a-reset" href="${url}"><h5 class="card-title">${name}(좋아요:${like})</h5></a>
+              <p class="card-text">${recent}</p>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer text-muted card-dynamic">
+          <a 
+          href="#"
+          onclick="starLike('${name}')"
+          class="card-link skyblue"
+          >
+          위로! 
+          <i class="far fa-thumbs-up">
+            </i>
+          </a>
+          <a 
+          href="/" 
+          onclick="starBye('${name}')"  
+          class="card-link red">
+          삭제 
+          <i class="fas fa-ban"></i>
+          </a>
+        </div>
+      </div>`;
+        $("#card-box").append(html_temp);
+      }
+    </script>
+  </head>
+  <body>
+    <header>
+      <p>마이 페이보릿 무비스타😄</p>
+      <p>순위를 매겨봅시다</p>
+    </header>
+    <div id="card-box">
+      <div class="card text-center shadow-sm mb-3 bg-white rounded">
+        <div class="media">
+          <div class="media-left">
+            <img
+              src="https://search.pstatic.net/common/?src=https%3A%2F%2Fssl.pstatic.net%2Fsstatic%2Fpeople%2Fportrait%2F201807%2F20180731143610623-6213324.jpg&type=u120_150&quality=95"
+              alt="Placeholder image"
+              width="90px"
+              height="90px"
+            />
+          </div>
+          <div class="media-body">
+            <div class="card-body">
+              <h5 class="card-title">김다미(좋아요:7)</h5>
+              <p class="card-text">나의아저씨</p>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer text-muted card-dynamic">
+          <a href="/" class="card-link skyblue"
+            >위로! <i class="far fa-thumbs-up"></i
+          ></a>
+          <a href="/" class="card-link red">삭제 <i class="fas fa-ban"></i></a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
