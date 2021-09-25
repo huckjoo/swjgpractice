@@ -1,4 +1,5 @@
 from flask import Flask, render_template, jsonify, request
+from bson.objectid import ObjectId
 
 app = Flask(__name__)
 
@@ -16,8 +17,8 @@ def home():
     return render_template("index.html")
 
 
-@app.route("/memo", methods=["GET"]) #/memo url로 들어가면 mongoDB의 모든
-#값들을 찾아서 _id제외한 다음에 json 형식으로 화면에 출력해준다.
+@app.route("/memo", methods=["GET"])  # /memo url로 들어가면 mongoDB의 모든
+# 값들을 찾아서 _id제외한 다음에 json 형식으로 화면에 출력해준다.
 def read_articles():
     # 1. 모든 document 찾기 & _id값은 출력에서 제외
     result = list(db.articles.find({}, {"_id": 0}))
@@ -56,6 +57,25 @@ def post_article():
     db.articles.insert_one(article)
 
     return jsonify({"result": "success"})
+
+
+# APIs
+@app.route("/api/del", methods=["POSt"])
+def del_article():
+    title_give = request.form["title"]
+    db.articles.delete_one({"title": title_give})
+    return jsonify({"result": "success"})
+
+
+@app.route("/api/update/<idx>", methods=["GET", "POST"])
+def update_article(idx):
+    # 수정요청이 GET으로 오면 요청온 id로 document 뽑아서 수정할 놈들 보내준다.
+    if request.method == "GET":
+        article = db.articles.find_one({"_id": ObjectId(idx)})
+        return render_template("edit.html", article=article)
+    # 수정을 다 하고 POST로 오면 수정하고 db에 저장해준다.
+    else:
+        return render_template("edit.html")
 
 
 if __name__ == "__main__":

@@ -37,7 +37,7 @@
         font-family: "Stylish", sans-serif;
       }
       .wrap {
-        width: 900px;
+        width: 700px;
         margin: auto;
       }
       .comment {
@@ -97,6 +97,7 @@
             //"articles" list의 json형식으로 내려받았다.
             for (let i = 0; i < articles.length; i++) {
               makeCard(
+                articles[i]["_id"],
                 articles[i]["image"],
                 articles[i]["url"],
                 articles[i]["title"],
@@ -107,13 +108,40 @@
           },
         });
       }
-      function makeCard(image, url, title, desc, comment) {
+      function articleDel(title) {
+        $.ajax({
+          type: "POST",
+          url: "/api/del",
+          data: { title: title },
+          success: function (response) {
+            if (response["result"] == "success") {
+              alert("삭제되었습니다!");
+              window.location.reload();
+            }
+          },
+        });
+      }
+      function articleUpdate(id) {
+        $.ajax({
+          type: "GET",
+          url: "/api/update",
+          data: { id: id },
+          success: function (response) {
+            if (response["result"] == "success") {
+              console.log("update complete");
+            }
+          },
+        });
+      }
+      function makeCard(id, image, url, title, desc, comment) {
         let temp_html = `<div class="card">
                         <img class="card-img-top" src="${image}" alt="Card image cap">
                         <div class="card-body">
                         <a href="${url}" target="_blank" class="card-title">${title}</a>
                         <p class="card-text">${desc}</p>
                         <p class="card-text comment">${comment}</p>
+                        <a href="/" onclick="articleDel('${title}')"><button type="button" class="btn btn-danger">삭제하기</button></a>
+                        <a href="/" onclick="articleUpdate('${id}')"><button type="button" class="btn btn-info">수정하기</button></a>
                         </div>
                     </div>`;
         $("#cards-box").append(temp_html);
